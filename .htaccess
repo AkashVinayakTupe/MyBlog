@@ -1,0 +1,14 @@
+# .htaccess (root) - protection only. Clean URLs are added in Step 2B.
+
+# Do not list folder contents
+Options -Indexes
+
+# Nobody can open config.php from the browser
+<Files "config.php">
+    Require all denied
+</Files>
+
+# Block log, backup and database files
+<FilesMatch "\.(log|sql|bak|ini|zip)$">
+    Require all denied
+</FilesMatch>

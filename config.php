@@ -15,7 +15,7 @@ define('DB_USER', 'root');   // XAMPP/Laragon default
 define('DB_PASS', '');       // XAMPP/Laragon default is empty. Use a strong one on live hosting.
 
 // ---------- Gemini ----------
-$api_key = getenv('GCP_API_KEY');
+
 define('GEMINI_MODEL', 'gemini-3.5-flash');   // Change ONLY here. Verify with the test page.
 define('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta');
 define('GEMINI_TIMEOUT', 120);                // seconds for one call
