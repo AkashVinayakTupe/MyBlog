@@ -1,0 +1,2 @@
+[2026-11-19 12:41:36] [ERROR] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'myblog'
+[2026-11-19 12:44:54] [ERROR] Gemini cURL error 28: Operation timed out after 120014 milliseconds with 0 bytes received
