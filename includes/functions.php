@@ -168,3 +168,184 @@ function curl_friendly_message(int $errno, string $error): string
             return 'Network error (' . $errno . '): ' . $error;
     }
 }
+
+// =====================================================================
+// NEW in Step 2
+// =====================================================================
+
+// ---------- Redirect ----------
+function redirect(string $url): void
+{
+    header('Location: ' . $url);
+    exit;
+}
+
+// ---------- Flash messages (one-time messages shown after a redirect) ----------
+// type: success, error or info
+function set_flash(string $type, string $message): void
+{
+    start_secure_session();
+    $_SESSION['flash'][] = ['type' => $type, 'message' => $message];
+}
+
+// Returns the HTML for all waiting messages, then clears them
+function render_flash(): string
+{
+    start_secure_session();
+    $html = '';
+    foreach ($_SESSION['flash'] ?? [] as $flash) {
+        $color = match ($flash['type']) {
+            'success' => 'bg-green-100 border-green-300 text-green-800',
+            'error'   => 'bg-red-100 border-red-300 text-red-800',
+            default   => 'bg-blue-100 border-blue-300 text-blue-800',
+        };
+        $html .= '<div class="border p-3 rounded mb-4 ' . $color . '">' . e($flash['message']) . '</div>';
+    }
+    unset($_SESSION['flash']);
+    return $html;
+}
+
+// ---------- Slugs ----------
+// "Hello World! 2026" becomes "hello-world-2026"
+// Note: titles in Hindi or other scripts become "post". We will handle that later if needed.
+function slugify(string $text): string
+{
+    $text = strtolower(trim($text));
+    $text = preg_replace('/[^a-z0-9]+/', '-', $text);
+    $text = trim($text, '-');
+    $text = substr($text, 0, 80);
+    $text = trim($text, '-');
+    return $text !== '' ? $text : 'post';
+}
+
+// Makes a slug that is not used yet. Adds -2, -3 ... if needed.
+// $table must be 'posts' or 'pages'. $exclude_id lets you edit an item without clashing with itself.
+function unique_slug(PDO $db, string $slug, string $table = 'posts', int $exclude_id = 0): string
+{
+    if (!in_array($table, ['posts', 'pages'], true)) {
+        throw new InvalidArgumentException('Bad table name for unique_slug.');
+    }
+
+    $candidate = $slug;
+    $number = 2;
+    $stmt = $db->prepare("SELECT COUNT(*) FROM $table WHERE slug = ? AND id != ?");
+
+    while (true) {
+        $stmt->execute([$candidate, $exclude_id]);
+        if ((int)$stmt->fetchColumn() === 0) {
+            return $candidate;
+        }
+        $candidate = $slug . '-' . $number;
+        $number++;
+    }
+}
+
+// ---------- Reading time ----------
+// Returns minutes (at least 1). Uses 200 words per minute.
+function reading_time(string $html): int
+{
+    $text  = trim(strip_tags($html));
+    $words = preg_split('/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+    $count = $words ? count($words) : 0;
+    return max(1, (int)ceil($count / 200));
+}
+
+// ---------- HTML sanitizer ----------
+// Keeps only safe tags. Used on every article written by AI before saving.
+// Allowed: p, h2, h3, ul, ol, li, strong, em, a, blockquote, img
+function sanitize_html(string $html): string
+{
+    if (trim($html) === '') {
+        return '';
+    }
+
+    $allowed_tags = ['p', 'h2', 'h3', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'blockquote', 'img'];
+    // These tags are removed together with everything inside them
+    $drop_tags = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button',
+                  'textarea', 'select', 'svg', 'math', 'noscript', 'head', 'title', 'meta', 'link', 'base'];
+
+    $dom = new DOMDocument();
+    libxml_use_internal_errors(true);   // do not print HTML warnings
+    $dom->loadHTML(
+        '<?xml encoding="UTF-8"><div>' . $html . '</div>',
+        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+    );
+    libxml_clear_errors();
+
+    $root = $dom->getElementsByTagName('div')->item(0);
+    if (!$root) {
+        return '';
+    }
+
+    sanitize_node($root, $allowed_tags, $drop_tags);
+
+    $clean = '';
+    foreach ($root->childNodes as $child) {
+        $clean .= $dom->saveHTML($child);
+    }
+    return trim($clean);
+}
+
+// Helper for sanitize_html(): cleans one node and everything inside it
+function sanitize_node(DOMNode $node, array $allowed_tags, array $drop_tags): void
+{
+    foreach (iterator_to_array($node->childNodes) as $child) {
+
+        // Remove HTML comments
+        if ($child instanceof DOMComment) {
+            $node->removeChild($child);
+            continue;
+        }
+        // Plain text is fine
+        if (!($child instanceof DOMElement)) {
+            continue;
+        }
+
+        $tag = strtolower($child->nodeName);
+
+        // Dangerous tags: remove with content
+        if (in_array($tag, $drop_tags, true)) {
+            $node->removeChild($child);
+            continue;
+        }
+
+        // Clean the inside first
+        sanitize_node($child, $allowed_tags, $drop_tags);
+
+        // Tag not allowed: keep its content, drop the tag itself
+        if (!in_array($tag, $allowed_tags, true)) {
+            while ($child->firstChild) {
+                $node->insertBefore($child->firstChild, $child);
+            }
+            $node->removeChild($child);
+            continue;
+        }
+
+        // Allowed tag: keep only safe attributes
+        $keep = ['a' => ['href'], 'img' => ['src', 'alt']][$tag] ?? [];
+        foreach (iterator_to_array($child->attributes) as $attr) {
+            if (!in_array($attr->name, $keep, true)) {
+                $child->removeAttribute($attr->name);
+            }
+        }
+
+        if ($tag === 'a') {
+            $href = trim($child->getAttribute('href'));
+            // Only http, https, mailto or a path starting with /
+            if (!preg_match('#^(https?://|mailto:|/)#i', $href)) {
+                $child->removeAttribute('href');
+            } else {
+                $child->setAttribute('rel', 'noopener noreferrer');
+            }
+        }
+
+        if ($tag === 'img') {
+            $src = trim($child->getAttribute('src'));
+            if (!preg_match('#^(https?://|/)#i', $src)) {
+                $node->removeChild($child);   // image without a safe src is removed
+                continue;
+            }
+            $child->setAttribute('loading', 'lazy');
+        }
+    }
+}

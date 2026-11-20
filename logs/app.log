@@ -1,2 +1,20 @@
 [2026-11-19 12:41:36] [ERROR] Database connection failed: SQLSTATE[HY000] [1049] Unknown database 'myblog'
 [2026-11-19 12:44:54] [ERROR] Gemini cURL error 28: Operation timed out after 120014 milliseconds with 0 bytes received
+[2026-11-19 13:35:21] [ERROR] ListModels HTTP 401
+[2026-11-19 13:35:25] [ERROR] ListModels HTTP 401
+[2026-11-19 13:37:51] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:42:38] [ERROR] ListModels HTTP 403
+[2026-11-19 13:46:05] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:46:08] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:46:28] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:46:37] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:46:50] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:46:53] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:46:59] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:47:10] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:47:18] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:47:21] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:47:27] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 13:47:37] [ERROR] Gemini HTTP 503 (model gemini-3.5-flash): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-11-19 15:43:57] [INFO] Setup finished. Admin user created.
+[2026-11-19 15:58:50] [ERROR] Error: Undefined constant "GEMINI_API_KEY" in C:\Xamp1\htdocs\myblog\includes\gemini.php:85
